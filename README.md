@@ -11,10 +11,13 @@ An airline company has several planes of the same type. Each plane has a seating
 | 2  | [] []  []  []  []  []  []  []  |
 | 3  | [] []  []  []  []  []  []  []  |
 
-If 4 seats are requested - allocate 4 seats in the middle of the first available row. Else 2 on the right and 2 on the left.
-If 3 seats are requested - If the middle section of the first available row is empty, allocate there continuously. Else go to the next row middle section.
-If 2 seats are requested - Allocate the edge seats, 2 on the left or right.
-If 1 seat is requested - then start from the edge, and allocate the first available seat.
+```If 4 seats are requested - allocate 4 seats in the middle of the first available row. Else 2 on the right and 2 on the left.```
+
+```If 3 seats are requested - If the middle section of the first available row is empty, allocate there continuously. Else go to the next row middle section.```
+
+```If 2 seats are requested - Allocate the edge seats, 2 on the left or right.```
+
+```If 1 seat is requested - then start from the edge, and allocate the first available seat.```
 
 Example:
 
