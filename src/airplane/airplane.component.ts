@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Aircraft } from './airplane';
 import { SeatsComponent } from '../seats/seats.component';
-import { Seat } from 'src/seats/seat';
+import { Seat } from '../seats/seat';
 
 @Component({
   selector: 'app-airplane',
@@ -10,8 +10,8 @@ import { Seat } from 'src/seats/seat';
   imports: [CommonModule, SeatsComponent],
   template: `
     <div class="aircraft">
-      <div class="row" *ngFor="let row of aircraft">
-        <div class="seat" *ngFor="let seat of row">
+      <div class=row *ngFor="let row of aircraft">
+        <div class=seat *ngFor="let seat of row">
           <app-seat
             [seatId]="seat.id"
             [occupied]="seat.occupied"
@@ -33,45 +33,29 @@ export class AirplaneComponent implements OnInit {
 
   seats: Seat[] = [];
 
-  aircraft: Aircraft[][] = [
-    [
-      { id: 'id', occupied: false, allocated: false },
-      { id: 'id', occupied: false, allocated: false },
-      { id: 'id', occupied: false, allocated: false },
-      { id: 'id', occupied: false, allocated: false },
-    ],
-    [
-      { id: 'id', occupied: false, allocated: false },
-      { id: 'id', occupied: false, allocated: false },
-      { id: 'id', occupied: false, allocated: false },
-      { id: 'id', occupied: false, allocated: false },
-    ],
-    [
-      { id: 'id', occupied: false, allocated: false },
-      { id: 'id', occupied: false, allocated: false },
-      { id: 'id', occupied: false, allocated: false },
-      { id: 'id', occupied: false, allocated: false },
-    ],
-  ];
+  aircraft: Aircraft[][] = [];
 
   constructor() {}
 
   ngOnInit() {
-    this.generateSeats();
+    this.aircraft = this.generateSeats();
   }
 
   generateSeats() {
     const seats = [];
     for (let row = 1; row <= this.rows; row++) {
+      let rowSeats = [];
       for (let seat = 1; seat <= this.seatsPerRow; seat++) {
-        seats.push({
+        rowSeats.push({
           row,
           seat,
           id: `${row}${String.fromCharCode(96 + seat)}`,
+          occupied: false,
+          allocated: false,
         });
       }
+      seats.push(rowSeats);
     }
-    console.log(seats);
     return seats;
   }
 
@@ -107,8 +91,17 @@ export class AirplaneComponent implements OnInit {
     if (middleRow !== -1) {
       return this.allocateSeatsInRow(middleRow, 4);
     }
-    // If no row is available, allocate 2 seats on the right and 2 on the left
-    return this.allocateTwoSeats().concat(this.allocateTwoSeats());
+
+    // If no row is available, try allocating 2 seats on the right and 2 on the left
+    const leftSeats = this.allocateTwoSeats();
+    if (leftSeats) {
+      const rightSeats = this.allocateTwoSeats();
+      if (rightSeats) {
+        return leftSeats.concat(rightSeats);
+      }
+    }
+
+    return null;
   }
 
   allocateThreeSeats() {
@@ -119,11 +112,14 @@ export class AirplaneComponent implements OnInit {
         return middleSeats;
       }
     }
+
     // If middle section not available, move to the next row
     const nextRow = this.findFirstAvailableRow(middleRow + 1);
     if (nextRow !== -1) {
       return this.allocateSeatsInRow(nextRow, 3);
     }
+
+    // If no suitable rows are available, return null
     return null;
   }
 
