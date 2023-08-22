@@ -1,13 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Aircraft } from './airplane';
 import { SeatsComponent } from '../seats/seats.component';
 import { Seat } from '../seats/seat';
+import { SeatAllocationComponent } from '../seat-allocation/seat-allocation.component';
 
 @Component({
   selector: 'app-airplane',
   standalone: true,
-  imports: [CommonModule, SeatsComponent],
+  imports: [CommonModule, SeatsComponent, SeatAllocationComponent],
   template: `
     <div class="aircraft">
       <div class=row *ngFor="let row of aircraft">
@@ -20,6 +21,7 @@ import { Seat } from '../seats/seat';
         </div>
       </div>
     </div>
+    <app-seat-allocation></app-seat-allocation>
   `,
   styles: [
     '.aircraft { display: flex; flex-direction: column; }',
@@ -28,8 +30,8 @@ import { Seat } from '../seats/seat';
   ],
 })
 export class AirplaneComponent implements OnInit {
-  rows: number = 3;
-  seatsPerRow: number = 8;
+  @Input() numRows: number = 0;
+  @Input() seatsPerRow: number = 0;
 
   seats: Seat[] = [];
 
@@ -38,12 +40,13 @@ export class AirplaneComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
+    console.log(this.numRows, this.seatsPerRow);
     this.aircraft = this.generateSeats();
   }
 
   generateSeats() {
     const seats = [];
-    for (let row = 1; row <= this.rows; row++) {
+    for (let row = 1; row <= this.numRows; row++) {
       let rowSeats = [];
       for (let seat = 1; seat <= this.seatsPerRow; seat++) {
         rowSeats.push({
@@ -147,7 +150,7 @@ export class AirplaneComponent implements OnInit {
   }
 
   findFirstAvailableRow(startRow = 1) {
-    for (let row = startRow; row <= this.rows; row++) {
+    for (let row = startRow; row <= this.numRows; row++) {
       const occupiedSeats = this.seats
         .filter((seat) => seat.row === row)
         .map((seat) => seat.seat);
