@@ -11,6 +11,11 @@ import { SeatsComponent } from '../seats/seats.component';
 import { SeatAllocationComponent } from '../seat-allocation/seat-allocation.component';
 import { AirplaneViewComponent } from '../airplane-view/airplane-view.component';
 
+// Constants for seat allocation
+const EDGE_SEATS = [1, 2];
+const MIDDLE_FOUR_SEATS = [3, 4, 5, 6];
+const MIDDLE_THREE_SEATS = [3, 4, 5];
+
 @Component({
   selector: 'app-airplane',
   standalone: true,
@@ -39,10 +44,12 @@ export class AirplaneComponent implements OnInit, OnChanges {
   constructor() {}
 
   ngOnInit() {
+    // Generate seats on initialization
     this.seats = this.generateSeats();
   }
 
   ngOnChanges(changes: SimpleChanges) {
+    // Regenerate seats when numRows or seatsPerRow change
     if (changes.numRows || changes.seatsPerRow) {
       this.seats = this.generateSeats();
     }
@@ -52,6 +59,7 @@ export class AirplaneComponent implements OnInit, OnChanges {
     const seats = [];
     for (let row = 1; row <= this.numRows; row++) {
       for (let seat = 1; seat <= this.seatsPerRow; seat++) {
+        // Create seat objects
         seats.push({
           row,
           seat,
@@ -64,7 +72,8 @@ export class AirplaneComponent implements OnInit, OnChanges {
   }
 
   handleSeatAllocation(numSeats: number) {
-    if (numSeats == -1) {
+    // Handle seat allocation event
+    if (numSeats === -1) {
       this.resetSeatAllocation();
       return;
     }
@@ -78,13 +87,17 @@ export class AirplaneComponent implements OnInit, OnChanges {
   allocateSeats(numSeats: number) {
     if (numSeats > 4) {
       alert('Please enter less than 4 seats');
+      return [];
     }
     if (numSeats < 0) {
-      alert('Please enter positive value');
+      alert('Please enter a positive value');
+      return [];
     }
+
     const allocatedSeats = [];
     while (numSeats > 0 && this.seats.length > 0) {
       let seat;
+
       if (numSeats === 4) {
         seat = this.allocateFourSeats();
       } else if (numSeats === 3) {
@@ -95,32 +108,33 @@ export class AirplaneComponent implements OnInit, OnChanges {
         seat = this.allocateSingleSeat();
       }
 
-      if (seat) {
-        allocatedSeats.push(seat);
-        numSeats -= seat.length || 1;
-      } else {
+      if (!seat) {
         break;
       }
+
+      allocatedSeats.push(seat);
+      numSeats -= seat.length || 1;
     }
     return allocatedSeats;
   }
 
   allocateFourSeats(startRow = 1) {
-    // Allocate 4 seats in the middle of the first available row
-
     let availableFourSeats: Aircraft[] = [];
+
     for (let row = startRow; row <= this.numRows; row++) {
       availableFourSeats = this.seats.filter(
         (seat) =>
           seat.row === row &&
           seat.allocated === false &&
-          [3, 4, 5, 6].includes(seat.seat)
+          MIDDLE_FOUR_SEATS.includes(seat.seat)
       );
-      if (availableFourSeats.length >= 4)
+
+      if (availableFourSeats.length >= 4) {
         return this.allocateAndMarkSeats(availableFourSeats, 4);
+      }
     }
 
-    // If no row is available, try allocating 2 seats on the right and 2 on the left
+    // If not enough available in a row, try allocating 2 seats on each side
     const leftSeats = this.allocateTwoSeats();
     if (leftSeats) {
       const rightSeats = this.allocateTwoSeats();
@@ -134,57 +148,63 @@ export class AirplaneComponent implements OnInit, OnChanges {
 
   allocateThreeSeats(startRow = 1) {
     let availableThreeSeats: Aircraft[] = [];
+
     for (let row = startRow; row <= this.numRows; row++) {
       availableThreeSeats = this.seats.filter(
         (seat) =>
           seat.row === row &&
           seat.allocated === false &&
-          [3, 4, 5].includes(seat.seat)
+          MIDDLE_THREE_SEATS.includes(seat.seat)
       );
-      if (availableThreeSeats.length >= 3)
+
+      if (availableThreeSeats.length >= 3) {
         return this.allocateAndMarkSeats(availableThreeSeats, 3);
+      }
     }
 
     return null;
   }
 
   allocateTwoSeats() {
-    // Allocate 2 edge seats, 2 on the left or right
     const availableTwoSeats = this.seats.filter(
       (seat) =>
         seat.allocated === false &&
-        (seat.seat === 1 ||
-          seat.seat === 2 ||
+        (EDGE_SEATS.includes(seat.seat) ||
           seat.seat === this.seatsPerRow - 1 ||
           seat.seat === this.seatsPerRow)
     );
+
     if (availableTwoSeats.length >= 2) {
       return this.allocateAndMarkSeats(availableTwoSeats, 2);
     }
+
     return null;
   }
 
   allocateSingleSeat() {
-    // Allocate 1 seat starting from the edge
-    const availableSingleSeats = this.seats.filter(
-      (seat) => seat.allocated === false
-    );
+    const availableSingleSeats = this.seats.filter((seat) => !seat.allocated);
+
     if (availableSingleSeats.length >= 1) {
       return this.allocateAndMarkSeats(availableSingleSeats, 1);
     }
+
     return null;
   }
 
   allocateAndMarkSeats(availableSeats: Aircraft[], numSeats: number) {
     const allocatedSeats = availableSeats.slice(0, numSeats);
+
     this.seats = this.seats.map((seat) => {
       if (allocatedSeats.includes(seat)) {
         return {
           ...seat,
           allocated: true,
         };
-      } else return seat;
+      } else {
+        return seat;
+      }
     });
+
     return allocatedSeats.map((seat) => seat.id) || null;
   }
 }
