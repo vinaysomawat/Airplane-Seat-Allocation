@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Aircraft } from './airplane';
 import { SeatsComponent } from '../seats/seats.component';
-import { Seat } from '../seats/seat';
 import { SeatAllocationComponent } from '../seat-allocation/seat-allocation.component';
 
 @Component({
