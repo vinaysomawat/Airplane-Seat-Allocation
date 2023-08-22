@@ -21,7 +21,8 @@ import { SeatAllocationComponent } from '../seat-allocation/seat-allocation.comp
         </div>
       </div>
     </div>
-    <app-seat-allocation></app-seat-allocation>
+    <app-seat-allocation (allocateEvent)="handleSeatAllocation($event)"></app-seat-allocation>
+    <div><p *ngIf="resultSeats?.length">Allocated seats: {{ resultSeats }}</p></div>
   `,
   styles: [
     '.aircraft { display: flex; flex-direction: column; }',
@@ -33,15 +34,19 @@ export class AirplaneComponent implements OnInit {
   @Input() numRows: number = 0;
   @Input() seatsPerRow: number = 0;
 
-  seats: Seat[] = [];
+  seats: any[] = [];
 
   aircraft: Aircraft[][] = [];
+  resultSeats: any;
 
   constructor() {}
 
   ngOnInit() {
-    console.log(this.numRows, this.seatsPerRow);
     this.aircraft = this.generateSeats();
+    this.seats = this.aircraft.reduce(
+      (result, subArray) => result.concat(subArray),
+      []
+    );
   }
 
   generateSeats() {
@@ -62,9 +67,19 @@ export class AirplaneComponent implements OnInit {
     return seats;
   }
 
-  allocateSeats(numSeats: number) {
-    const allocatedSeats = [];
+  handleSeatAllocation(numSeats: number) {
+    this.resultSeats = this.allocateSeats(numSeats)[0];
+    console.log('coming here', this.resultSeats);
+  }
 
+  allocateSeats(numSeats: number) {
+    if (numSeats > 4) {
+      alert('Please enter less than 4 seats');
+    }
+    if (numSeats < 0) {
+      alert('Please enter positive value');
+    }
+    const allocatedSeats = [];
     while (numSeats > 0 && this.seats.length > 0) {
       let seat;
       if (numSeats === 4) {
@@ -84,7 +99,7 @@ export class AirplaneComponent implements OnInit {
         break;
       }
     }
-
+    console.log(allocatedSeats);
     return allocatedSeats;
   }
 
