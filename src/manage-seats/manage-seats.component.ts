@@ -19,11 +19,9 @@ import { AirplaneComponent } from '../airplane/airplane.component';
           <label for="seatsPerRow">Seats per Row:</label>
           <input id="seatsPerRow" type="number" [(ngModel)]="seatsPerRow">
         </div>
-        <button class="btn-primary" (click)="generateSeats()">Generate Seats</button>
-        <button class="btn-secondary" (click)="resetSeats()">Reset Seats</button>
       </div>
     </div>
-    <app-airplane *ngIf="isSeatsAllocated" [numRows]="numRows" [seatsPerRow]="seatsPerRow"></app-airplane>
+    <app-airplane *ngIf="numRows && seatsPerRow" [numRows]="numRows" [seatsPerRow]="seatsPerRow"></app-airplane>
   `,
   styles: [
     '.form-container { display: flex; justify-content: center; align-items: center; height: 50vh; }',
@@ -40,19 +38,6 @@ import { AirplaneComponent } from '../airplane/airplane.component';
 export class ManageAirplane implements OnInit {
   numRows: number = 3;
   seatsPerRow: number = 8;
-  isSeatsAllocated: boolean = false;
 
   ngOnInit() {}
-
-  generateSeats() {
-    if (this.numRows && this.seatsPerRow) {
-      this.isSeatsAllocated = true;
-    } else {
-      alert('rows or seats per rows should not be empty');
-    }
-  }
-
-  resetSeats() {
-    this.isSeatsAllocated = false;
-  }
 }

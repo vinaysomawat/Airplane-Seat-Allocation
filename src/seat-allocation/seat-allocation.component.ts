@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
     <label for="numSeats">Number of Seats to Allocate:</label>
     <input id="numSeats" type="number" [(ngModel)]="numSeats">
     <button (click)="allocateSeats()">Allocate</button>
+    <button (click)="resetAllocation()">Reset</button>
   </div>
   `,
   styles: [
@@ -23,5 +24,9 @@ export class SeatAllocationComponent {
 
   allocateSeats() {
     this.allocateEvent.emit(this.numSeats);
+  }
+
+  resetAllocation() {
+    this.allocateEvent.emit(-1);
   }
 }

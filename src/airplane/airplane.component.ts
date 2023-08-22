@@ -1,35 +1,35 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Aircraft } from './airplane';
 import { SeatsComponent } from '../seats/seats.component';
 import { SeatAllocationComponent } from '../seat-allocation/seat-allocation.component';
+import { AirplaneViewComponent } from '../airplane-view/airplane-view.component';
 
 @Component({
   selector: 'app-airplane',
   standalone: true,
-  imports: [CommonModule, SeatsComponent, SeatAllocationComponent],
+  imports: [
+    CommonModule,
+    SeatsComponent,
+    SeatAllocationComponent,
+    AirplaneViewComponent,
+  ],
   template: `
     <div class="aircraft">
-      <div class=row *ngFor="let row of aircraft">
-        <div class=seat *ngFor="let seat of row">
-          <app-seat
-            [seatId]="seat.id"
-            [occupied]="seat.occupied"
-            [allocated]="seat.allocated"
-          ></app-seat>
-        </div>
-      </div>
+      <app-airplane-view [rows]="numRows" [cols]="seatsPerRow" [seats]="seats"></app-airplane-view>
     </div>
     <app-seat-allocation (allocateEvent)="handleSeatAllocation($event)"></app-seat-allocation>
     <div><p *ngIf="resultSeats?.length">Allocated seats: {{ resultSeats }}</p></div>
   `,
-  styles: [
-    '.aircraft { display: flex; flex-direction: column; }',
-    '.row { display: flex; justify-content: center; margin: 5px 0; }',
-    '.seat { margin: 0 5px; }',
-  ],
+  styles: ['.aircraft { display: flex; flex-direction: column; }'],
 })
-export class AirplaneComponent implements OnInit {
+export class AirplaneComponent implements OnInit, OnChanges {
   @Input() numRows: number = 0;
   @Input() seatsPerRow: number = 0;
 
@@ -48,6 +48,12 @@ export class AirplaneComponent implements OnInit {
     );
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes.numRows || changes.seatsPerRow) {
+      this.aircraft = this.generateSeats();
+    }
+  }
+
   generateSeats() {
     const seats = [];
     for (let row = 1; row <= this.numRows; row++) {
@@ -57,7 +63,6 @@ export class AirplaneComponent implements OnInit {
           row,
           seat,
           id: `${row}${String.fromCharCode(96 + seat)}`,
-          occupied: false,
           allocated: false,
         });
       }
@@ -67,9 +72,14 @@ export class AirplaneComponent implements OnInit {
   }
 
   handleSeatAllocation(numSeats: number) {
+    if (numSeats == -1) {
+      this.resetSeatAllocation();
+      return;
+    }
     this.resultSeats = this.allocateSeats(numSeats)[0];
-    console.log('coming here', this.resultSeats);
   }
+
+  resetSeatAllocation() {}
 
   allocateSeats(numSeats: number) {
     if (numSeats > 4) {
