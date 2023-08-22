@@ -1,11 +1,12 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Aircraft } from 'src/airplane/airplane';
+import { Aircraft } from '../airplane/airplane';
+import { SeatsComponent } from '../seats/seats.component';
 
 @Component({
   selector: 'app-airplane-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SeatsComponent],
   template: `
   <div class=row *ngFor="let row of aircraft">
     <div class=seat *ngFor="let seat of row">
@@ -28,7 +29,7 @@ export class AirplaneViewComponent implements OnChanges {
   aircraft: Aircraft[][] = [];
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes.array || changes.rows || changes.cols) {
+    if (changes.seats || changes.rows || changes.cols) {
       this.generateMatrix();
     }
   }

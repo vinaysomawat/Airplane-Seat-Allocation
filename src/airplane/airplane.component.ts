@@ -33,40 +33,32 @@ export class AirplaneComponent implements OnInit, OnChanges {
   @Input() numRows: number = 0;
   @Input() seatsPerRow: number = 0;
 
-  seats: any[] = [];
-
-  aircraft: Aircraft[][] = [];
+  seats: Aircraft[] = [];
   resultSeats: any;
 
   constructor() {}
 
   ngOnInit() {
-    this.aircraft = this.generateSeats();
-    this.seats = this.aircraft.reduce(
-      (result, subArray) => result.concat(subArray),
-      []
-    );
+    this.seats = this.generateSeats();
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.numRows || changes.seatsPerRow) {
-      this.aircraft = this.generateSeats();
+      this.seats = this.generateSeats();
     }
   }
 
   generateSeats() {
     const seats = [];
     for (let row = 1; row <= this.numRows; row++) {
-      let rowSeats = [];
       for (let seat = 1; seat <= this.seatsPerRow; seat++) {
-        rowSeats.push({
+        seats.push({
           row,
           seat,
           id: `${row}${String.fromCharCode(96 + seat)}`,
           allocated: false,
         });
       }
-      seats.push(rowSeats);
     }
     return seats;
   }
@@ -79,7 +71,9 @@ export class AirplaneComponent implements OnInit, OnChanges {
     this.resultSeats = this.allocateSeats(numSeats)[0];
   }
 
-  resetSeatAllocation() {}
+  resetSeatAllocation() {
+    this.seats.forEach((item) => (item.allocated = false));
+  }
 
   allocateSeats(numSeats: number) {
     if (numSeats > 4) {
@@ -108,7 +102,6 @@ export class AirplaneComponent implements OnInit, OnChanges {
         break;
       }
     }
-    console.log(allocatedSeats);
     return allocatedSeats;
   }
 
@@ -153,9 +146,15 @@ export class AirplaneComponent implements OnInit, OnChanges {
   allocateTwoSeats() {
     // Allocate 2 edge seats, 2 on the left or right
     const availableSeats = this.seats.filter(
-      (seat) => seat.row === 1 && (seat.seat === 1 || seat.seat === 8)
+      (seat) =>
+        seat.allocated === false &&
+        (seat.seat === 1 ||
+          seat.seat === 2 ||
+          seat.seat === 7 ||
+          seat.seat === 8)
     );
     if (availableSeats.length >= 2) {
+      return this.allocateAndMarkSeats(availableSeats, 2);
       return this.allocateSeatsInRow(1, 2);
     }
     return null;
@@ -199,5 +198,20 @@ export class AirplaneComponent implements OnInit, OnChanges {
       return allocatedSeats.map((seat) => seat.id);
     }
     return null;
+  }
+
+  allocateAndMarkSeats(availableSeats: Aircraft[], numSeats: number) {
+    console.log(JSON.stringify(this.seats));
+    const allocatedSeats = availableSeats.slice(0, numSeats);
+    this.seats = this.seats.map((seat) => {
+      if (allocatedSeats.includes(seat)) {
+        return {
+          ...seat,
+          allocated: true,
+        };
+      } else return seat;
+    });
+    console.log(JSON.stringify(this.seats));
+    return allocatedSeats.map((seat) => seat.id) || null;
   }
 }
