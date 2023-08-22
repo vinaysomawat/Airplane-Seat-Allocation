@@ -8,7 +8,7 @@ import { Component, Input } from '@angular/core';
   template: `
     <div [class.allocated]="allocated">{{ seatId }}</div>
   `,
-  styles: ['.allocated { background-color: green; }'],
+  styles: ['.allocated { border: green; }'],
 })
 export class SeatsComponent {
   @Input() seatId: string = '';

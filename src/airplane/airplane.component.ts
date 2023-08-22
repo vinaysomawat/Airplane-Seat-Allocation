@@ -105,11 +105,19 @@ export class AirplaneComponent implements OnInit, OnChanges {
     return allocatedSeats;
   }
 
-  allocateFourSeats() {
+  allocateFourSeats(startRow = 1) {
     // Allocate 4 seats in the middle of the first available row
-    const middleRow = this.findFirstAvailableRow();
-    if (middleRow !== -1) {
-      return this.allocateSeatsInRow(middleRow, 4);
+
+    let availableFourSeats: Aircraft[] = [];
+    for (let row = startRow; row <= this.numRows; row++) {
+      availableFourSeats = this.seats.filter(
+        (seat) =>
+          seat.row === row &&
+          seat.allocated === false &&
+          [3, 4, 5, 6].includes(seat.seat)
+      );
+      if (availableFourSeats.length >= 4)
+        return this.allocateAndMarkSeats(availableFourSeats, 4);
     }
 
     // If no row is available, try allocating 2 seats on the right and 2 on the left
@@ -124,84 +132,50 @@ export class AirplaneComponent implements OnInit, OnChanges {
     return null;
   }
 
-  allocateThreeSeats() {
-    const middleRow = this.findFirstAvailableRow();
-    if (middleRow !== -1) {
-      const middleSeats = this.allocateSeatsInRow(middleRow, 3);
-      if (middleSeats) {
-        return middleSeats;
-      }
+  allocateThreeSeats(startRow = 1) {
+    let availableThreeSeats: Aircraft[] = [];
+    for (let row = startRow; row <= this.numRows; row++) {
+      availableThreeSeats = this.seats.filter(
+        (seat) =>
+          seat.row === row &&
+          seat.allocated === false &&
+          [3, 4, 5].includes(seat.seat)
+      );
+      if (availableThreeSeats.length >= 3)
+        return this.allocateAndMarkSeats(availableThreeSeats, 3);
     }
 
-    // If middle section not available, move to the next row
-    const nextRow = this.findFirstAvailableRow(middleRow + 1);
-    if (nextRow !== -1) {
-      return this.allocateSeatsInRow(nextRow, 3);
-    }
-
-    // If no suitable rows are available, return null
     return null;
   }
 
   allocateTwoSeats() {
     // Allocate 2 edge seats, 2 on the left or right
-    const availableSeats = this.seats.filter(
+    const availableTwoSeats = this.seats.filter(
       (seat) =>
         seat.allocated === false &&
         (seat.seat === 1 ||
           seat.seat === 2 ||
-          seat.seat === 7 ||
-          seat.seat === 8)
+          seat.seat === this.seatsPerRow - 1 ||
+          seat.seat === this.seatsPerRow)
     );
-    if (availableSeats.length >= 2) {
-      return this.allocateAndMarkSeats(availableSeats, 2);
-      return this.allocateSeatsInRow(1, 2);
+    if (availableTwoSeats.length >= 2) {
+      return this.allocateAndMarkSeats(availableTwoSeats, 2);
     }
     return null;
   }
 
   allocateSingleSeat() {
     // Allocate 1 seat starting from the edge
-    const availableSeat = this.seats.find(
-      (seat) => seat.row === 1 && (seat.seat === 1 || seat.seat === 8)
+    const availableSingleSeats = this.seats.filter(
+      (seat) => seat.allocated === false
     );
-    if (availableSeat) {
-      this.seats = this.seats.filter((seat) => seat.id !== availableSeat.id);
-      return [availableSeat.id];
-    }
-    return null;
-  }
-
-  findFirstAvailableRow(startRow = 1) {
-    for (let row = startRow; row <= this.numRows; row++) {
-      const occupiedSeats = this.seats
-        .filter((seat) => seat.row === row)
-        .map((seat) => seat.seat);
-      if (
-        !occupiedSeats.includes(3) &&
-        !occupiedSeats.includes(4) &&
-        !occupiedSeats.includes(5)
-      ) {
-        return row;
-      }
-    }
-    return -1;
-  }
-
-  allocateSeatsInRow(row: number, numSeats: number) {
-    const availableSeats = this.seats.filter(
-      (seat) => seat.row === row && seat.seat > 2 && seat.seat < 7
-    );
-    if (availableSeats.length >= numSeats) {
-      const allocatedSeats = availableSeats.slice(0, numSeats);
-      this.seats = this.seats.filter((seat) => !allocatedSeats.includes(seat));
-      return allocatedSeats.map((seat) => seat.id);
+    if (availableSingleSeats.length >= 1) {
+      return this.allocateAndMarkSeats(availableSingleSeats, 1);
     }
     return null;
   }
 
   allocateAndMarkSeats(availableSeats: Aircraft[], numSeats: number) {
-    console.log(JSON.stringify(this.seats));
     const allocatedSeats = availableSeats.slice(0, numSeats);
     this.seats = this.seats.map((seat) => {
       if (allocatedSeats.includes(seat)) {
@@ -211,7 +185,6 @@ export class AirplaneComponent implements OnInit, OnChanges {
         };
       } else return seat;
     });
-    console.log(JSON.stringify(this.seats));
     return allocatedSeats.map((seat) => seat.id) || null;
   }
 }
