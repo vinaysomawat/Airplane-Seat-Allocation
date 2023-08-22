@@ -1,10 +1,22 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-seats',
   standalone: true,
-  imports: [],
-  templateUrl: './seats.component.html',
+  imports: [CommonModule],
+  template: `
+    <div [class.occupied]="occupied" [class.allocated]="allocated">{{ seatId }}</div>
+  `,
+  styles: [
+    '.occupied { background-color: gray; }',
+    '.allocated { background-color: green; }',
+  ],
 })
-export class SeatsComponent {}
+export class SeatsComponent {
+  @Input() seatId: string = '';
+  @Input() occupied: boolean = false;
+  @Input() allocated: boolean = false;
+
+  constructor() {}
+}
